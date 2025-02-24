@@ -97,7 +97,7 @@ public class BirdInfo
         else { return selectedSounds[Random.Range(0, selectedSounds.Count)]; }
     }
 
-    public bool HasImageOfSex(Sex sex)
+    private bool HasImageOfSex(Sex sex)
     {
         if (sex == Sex.All) { return imagesList.Count > 0; }
         else { return imagesList.Exists(image => image.sex == sex); }
@@ -118,10 +118,19 @@ public class BirdInfo
         if (selectedSounds.Count == 0) { return new(); }
         else { return selectedSounds[Random.Range(0, selectedSounds.Count)]; }
     }
-    public bool HasSoundOfType(SoundType type)
+    private bool HasSoundOfType(SoundType type)
     {
         if (type == SoundType.All) { return soundsList.Count > 0; }
         else { return soundsList.Exists(sound => sound.type == type); }
     }
 
+    public BirdSound GetRandomSound(SoundType typePriority = SoundType.Song, bool findAnyway = true)
+    {
+        if (!HasSoundOfType(typePriority))
+        {
+            if (!findAnyway) return new();
+            else return GetRandomSound(type:SoundType.Song);
+        }
+        return GetRandomSound(typePriority);
+    }
 }

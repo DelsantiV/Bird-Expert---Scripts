@@ -8,6 +8,8 @@ using UnityEngine.ResourceManagement.ResourceLocations;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     [SerializeField] private string birdDataMainAddress;
     [SerializeField] private List<string> assetLabelsToLoad;
     private AsyncOperationHandle<TextAsset> codeNamesLoadOpHandle;
@@ -15,7 +17,22 @@ public class GameManager : MonoBehaviour
     private CanvasManager canvasManager;
     public Sprite testSprite;
     public AudioClip testAudioClip;
-    private void Awake()
+
+    public void Awake()
+    {
+        DontDestroyOnLoad(this);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        InitializeMainScene();
+    }
+
+    private void InitializeMainScene()
     {
         InitializeBirdsManager();
         InitializeCanvasManager();

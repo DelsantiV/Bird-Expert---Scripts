@@ -42,15 +42,10 @@ public class CanvasManager : MonoBehaviour
         else { Debug.Log("No Sound found !"); }
     }
 
-    public void SetUpNewBird(Sprite birdSprite, AudioClip birdSound)
-    {
-        DisplayBird(birdSprite);
-        SetSound(birdSound);
-    }
     public void SetUpNewBird(BirdInfo bird)
     {
         DisplayBird(bird.GetRandomImage().image);
-        SetSound(bird.GetRandomSound(SoundType.Song).sound);
+        SetSound(bird.GetRandomSound(typePriority:SoundType.Song, findAnyway:true).sound);
         currentBird = bird;
         Debug.Log(bird.spCode + " is now set up !");
     }

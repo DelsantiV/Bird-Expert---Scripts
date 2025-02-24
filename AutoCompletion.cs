@@ -23,7 +23,8 @@ public class AutoCompletion : MonoBehaviour
     private int selectedTextBoxIndex;
     private List<AutoFillText> textBoxesList;
 
-    private int maxSuggestionsNumber = 5;
+    private float sizeForBirdName = 30f;
+    private int maxNumerbOfBirdNames;
 
     private void Awake()
     {
@@ -85,7 +86,7 @@ public class AutoCompletion : MonoBehaviour
         if (results.Count > 0)
         {
             resultsParent.gameObject.SetActive(true);
-            while (resultIndex < maxSuggestionsNumber && resultIndex < results.Count)
+            while (resultIndex < results.Count)
             {
                 string name = results[resultIndex];
                 AutoFillText textBox = Instantiate(prefab, resultsParent).GetComponent<AutoFillText>();
@@ -98,7 +99,7 @@ public class AutoCompletion : MonoBehaviour
                 }
                 resultIndex++;
             }
-            //resultsParent.sizeDelta = new Vector2(resultsParent.sizeDelta.x, Mathf.Min(50*results.Count,250));
+            resultsParent.sizeDelta = new Vector2(resultsParent.sizeDelta.x, sizeForBirdName * results.Count + resultsParent.GetComponent<VerticalLayoutGroup>().padding.top + resultsParent.GetComponent<VerticalLayoutGroup>().spacing);
         }
         else
         {
@@ -121,9 +122,14 @@ public class AutoCompletion : MonoBehaviour
         return new List<string>();
     }
 
+    private bool DoesInputExist(string input)
+    {
+         return Names.frenchNames.Contains(input);  
+    }
+
     private void OnAnswerFilled(string input)
     {
-        bool exists = Names.frenchNames.Contains(input);
+        bool exists = DoesInputExist(input);
         validationButton.SetActive(exists);
         answerCompleted = exists;
     }
