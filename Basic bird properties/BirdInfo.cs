@@ -1,23 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
+using System.Linq;
 using UnityEngine;
 
-public class BirdInfo
+namespace BirdExpert
 {
-    private BirdBaseData baseData;
-
-    private List<BirdImage> imagesList;
-    private List<BirdSound> soundsList;
-    private bool hasSexualDimorphism;
     public struct BirdImage
     {
         public Sprite image;
         public Sex sex;
-
+        public GameSettings.ImageSettings imageType;
         public BirdImage(Sprite image, Sex sex)
         {
             this.image = image;
             this.sex = sex;
+            this.imageType = GameSettings.ImageSettings.Base;
         }
     }
     public struct BirdSound
@@ -32,105 +28,124 @@ public class BirdInfo
         }
     }
 
-    public BirdInfo(BirdBaseData baseData) 
+    public struct MorphoCaracteristics
     {
-        this.baseData = baseData;
-        imagesList = new List<BirdImage>();
-        soundsList = new List<BirdSound>();
-    }
-
-
-    public bool TryInitializeBirdInfos()
-    {
-        return false;
-    }
-
-    public void AddImage(BirdImage image)
-    {
-        imagesList.Add(image);
-    }
-
-    public void AddSound(BirdSound sound)
-    {
-        soundsList.Add(sound);
-    }
-
-    public void SetSexualDimorphism(bool hasSexualDimorphism)
-    {
-        this.hasSexualDimorphism = hasSexualDimorphism;
-    }
-
-    public string GetName(Lang lang)
-    {
-        return baseData.GetName(lang);
-    }
-
-    public string spCode { get { return baseData.code_sp; } }
-    public BirdBaseData.MorphoCaracteristics Morpho
-    {
-        get
+        public float length;
+        public float weight;
+        public MorphoCaracteristics(float length, float weight)
         {
-            return baseData.Morpho;
-        }
-    }
-    public BirdBaseData.ClassifInfos Classif 
-    {
-        get
-        {
-            return baseData.Classif;
+            this.length = length;
+            this.weight = weight;
         }
     }
 
-    public string[] AllHabitatsNames { get { return baseData.habitat; } }
-    public string HabitatName(int index) { return baseData.HabitatName(index); }
-    public string[] AllTrophicNiches { get { return baseData.food; } }
-    public string TrophicNiche(int index) { return baseData.TrophicNiche(index); }
-
-    public BirdImage[] GetAllImages() { return imagesList.ToArray(); }
-    public BirdImage GetImage(int index) { return imagesList[index]; }
-    public BirdImage GetRandomImage(Sex sex = Sex.All) 
+    public struct ClassifInfos
     {
-        List<BirdImage> selectedSounds = new();
-        if (sex == Sex.All) { selectedSounds = imagesList; }
-        else { selectedSounds = imagesList.FindAll(image => image.sex == sex); }
-        if (selectedSounds.Count == 0) { return new(); }
-        else { return selectedSounds[Random.Range(0, selectedSounds.Count)]; }
-    }
-
-    private bool HasImageOfSex(Sex sex)
-    {
-        if (sex == Sex.All) { return imagesList.Count > 0; }
-        else { return imagesList.Exists(image => image.sex == sex); }
-    }
-
-    public BirdSound[] GetAllAudioClips(SoundType type = SoundType.All) 
-    {
-        if (type == SoundType.All) return soundsList.ToArray(); 
-        else return soundsList.FindAll(sound => sound.type == type).ToArray();
-    }
-    public BirdSound GetAudioClip(int index) { return soundsList[index]; }
-
-    public BirdSound GetRandomSound(SoundType type = SoundType.All)
-    {
-        List<BirdSound> selectedSounds = new();
-        if (type == SoundType.All) { selectedSounds = soundsList; }
-        else { selectedSounds = soundsList.FindAll(sound => sound.type == type); }
-        if (selectedSounds.Count == 0) { return new(); }
-        else { return selectedSounds[Random.Range(0, selectedSounds.Count)]; }
-    }
-    private bool HasSoundOfType(SoundType type)
-    {
-        if (type == SoundType.All) { return soundsList.Count > 0; }
-        else { return soundsList.Exists(sound => sound.type == type); }
-    }
-
-    public BirdSound GetRandomSound(SoundType typePriority = SoundType.Song, bool findAnyway = true)
-    {
-        if (!HasSoundOfType(typePriority))
+        public string order;
+        public string family;
+        public ClassifInfos(string order, string family)
         {
-            if (!findAnyway) return new();
-            else return GetRandomSound(type:SoundType.Song);
+            this.order = order;
+            this.family = family;
         }
-        return GetRandomSound(typePriority);
+    }
+    public class BirdInfo
+    {
+        private BirdBaseData baseData;
+        private bool hasSexualDimorphism;
+
+        public BirdInfo(BirdBaseData baseData)
+        {
+            this.baseData = baseData;
+        }
+        public void AddImage(BirdImage image)
+        {
+            baseData.AddImage(image);
+        }
+
+        public void AddSound(BirdSound sound)
+        {
+            baseData.AddSound(sound);
+        }
+
+        public void SetSexualDimorphism(bool hasSexualDimorphism)
+        {
+            this.hasSexualDimorphism = hasSexualDimorphism;
+        }
+
+        public string GetName(Lang lang)
+        {
+            return baseData.GetName(lang);
+        }
+
+        public string spCode { get => baseData.code_sp; } 
+        public MorphoCaracteristics Morpho { get => baseData.Morpho; }
+        public ClassifInfos Classif { get => baseData.Classif;}
+        public bool NeedsSound { get => baseData.difficult_visual_identification; }
+        public bool NeedsImage { get => baseData.difficult_sound_identification; }
+        public string[] AllHabitatsNames { get => baseData.habitat; } 
+        public string HabitatName(int index) { return baseData.GetHabitatName(index); }
+        public string[] AllTrophicNiches { get => baseData.food; } 
+        public string TrophicNiche(int index) { return baseData.GetTrophicNiche(index); }
+        public bool IsInHabitat(string habitat) { return AllHabitatsNames.Contains(habitat); }
+        public bool IsTrophicNiche(string food) { return AllTrophicNiches.Contains(food); }
+
+        public int Rarity { get => baseData.rarity; }
+
+        private BirdImage[] AllImages {get => baseData.allImages; }
+        private BirdImage GetImage(int index) { return baseData.allImages[index]; }
+        public BirdImage GetRandomImage(GameSettings.ImageSettings imageType,Sex sex = Sex.All)
+        {
+            BirdImage[] selectedImages;
+            if (sex == Sex.All) { selectedImages = AllImages; }
+            else { selectedImages = AllImages.Where(image => image.sex == sex).ToArray(); }
+            selectedImages = AllImages.Where(image => image.imageType == imageType).ToArray();
+            if (selectedImages.Length == 0) { return new(null, Sex.None); }
+            else { return GetImage(UnityEngine.Random.Range(0, selectedImages.Length)); }
+        }
+
+        private bool HasImageOfSex(Sex sex)
+        {
+            if (sex == Sex.All) { return AllImages.Length > 0; }
+            else { return Array.Exists(AllImages, image => image.sex == sex); }
+        }
+
+        public BirdSound[] AllSounds { get => baseData.allSounds; }
+        public BirdSound[] GetAllAudioClips(SoundType type = SoundType.AllSounds)
+        {
+            if (type == SoundType.AllSounds) return AllSounds;
+            else return AllSounds.Where(sound => sound.type == type).ToArray();
+        }
+        public BirdSound GetAudioClip(int index) { return AllSounds[index]; }
+
+        public BirdSound GetRandomSound(SoundType type = SoundType.AllSounds)
+        {
+            BirdSound[] selectedSounds;
+            if (type == SoundType.AllSounds) { selectedSounds = AllSounds; }
+            else { selectedSounds = AllSounds.Where(sound => sound.type == type).ToArray(); }
+            if (selectedSounds.Length == 0) { return new(null, SoundType.None); }
+            else { return selectedSounds[UnityEngine.Random.Range(0, selectedSounds.Length)]; }
+        }
+        private bool HasSoundOfType(SoundType type)
+        {
+            if (type == SoundType.AllSounds) { return AllSounds.Length > 0; }
+            else { return Array.Exists(AllSounds, sound => sound.type == type); }
+        }
+
+        public BirdSound GetRandomSound(SoundType typePriority = SoundType.Song, bool findAnyway = true)
+        {
+            if (!HasSoundOfType(typePriority))
+            {
+                if (!findAnyway) return new();
+                else return GetRandomSound(type: SoundType.AllSounds);
+            }
+            return GetRandomSound(typePriority);
+        }
+
+        public void Initialize() 
+        { 
+            baseData.Initialize();
+            hasSexualDimorphism = (HasImageOfSex(Sex.Male) || HasImageOfSex(Sex.Female));
+        }
     }
 }

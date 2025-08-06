@@ -1,25 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System;
-using System.Linq;
-using System.IO;
 
-
-public  class Names
+namespace BirdExpert
 {
-    public static List<string> latinNames = new List<string>();
-    public static List<string> frenchNames = new List<string>();
-    public static List<string> englishNames = new List<string>();
-    public static List<string> codeNames;
-
-    public static void RegisterBird(BirdInfo bird)
+    public class Names
     {
-        if (bird != null)
+        public static List<string> latinNames = new List<string>();
+        public static List<string> frenchNames = new List<string>();
+        public static List<string> englishNames = new List<string>();
+        public static List<string> codeNames;
+
+        public static void RegisterBird(BirdInfo bird)
         {
-            latinNames.Add(bird.GetName(Lang.Latin));
-            frenchNames.Add(bird.GetName(Lang.French));
-            englishNames.Add(bird.GetName(Lang.English));
+            if (bird != null)
+            {
+                latinNames.Add(bird.GetName(Lang.Latin));
+                frenchNames.Add(bird.GetName(Lang.French));
+                englishNames.Add(bird.GetName(Lang.English));
+            }
         }
     }
 }
