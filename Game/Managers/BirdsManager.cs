@@ -13,7 +13,10 @@ namespace BirdExpert
         {
             return allBirds[spCode];
         }
-
+        public BirdInfo GetBirdFromLang(Lang lang, string name)
+        {
+            return allBirds.Values.ToList().Find(bird => bird.GetName(lang) == name);
+        }
         public BirdInfo GetRandomBird()
         {
             int birdnumber = spCodesList.Count;

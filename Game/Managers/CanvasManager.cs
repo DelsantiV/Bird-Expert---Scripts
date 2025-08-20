@@ -45,9 +45,9 @@ namespace BirdExpert
             quizzArea.StartQuizz();
         }
 
-        public void StopQuizz(int score) 
+        public void StopQuizz(List<QuizzAnswer> allAnswers) 
         { 
-            endArea.StopQuizz(score);
+            endArea.StopQuizz(allAnswers);
         }
     }
 }

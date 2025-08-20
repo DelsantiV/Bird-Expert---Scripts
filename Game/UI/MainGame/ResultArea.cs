@@ -22,22 +22,22 @@ namespace BirdExpert {
             gameObject.SetActive(true);
             bool goodResult = input == answer;
             if (goodResult) SetUpGoodResult();
-            else SetUpBadResult(answer);
+            else SetUpBadResult(input, answer);
         }
         private void SetUpGoodResult()
         {
-            resultText.text = "Bonne réponse !";
+            resultText.SetCodeText("good-answer");
         }
 
-        private void SetUpBadResult(string answer)
+        private void SetUpBadResult(string input, string answer)
         {
-            resultText.text = "Mauvaise réponse, il s'agissait d'un(e) " + answer;
+            resultText.SetText(Language.GetLang("wrong-anwser-beginning") + input + Language.GetLang("wrong-answer-end") + answer);
         }
         public void ResetArea()
         {
             gameObject.SetActive(false);
             resultText.text = "";
         }
-        public void StopQuizz() => nextBirdText.text = "Accéder aux résultats";
+        public void StopQuizz() => nextBirdText.SetCodeText("gotoresults");
     } 
 }

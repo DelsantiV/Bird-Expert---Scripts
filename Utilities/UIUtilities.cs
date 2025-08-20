@@ -8,7 +8,8 @@ namespace BirdExpert
     public static class UIUtilities
     {
         public static TextMeshProUGUI GetText(this Button button) => button.transform.GetComponentInChildren<TextMeshProUGUI>();
-        public static void SetText(this Button button, string text) => button.GetText().SetText(Language.GetLang(text));
+        public static void SetCodeText(this Button button, string text) => button.GetText().SetText(Language.GetLang(text));
+        public static void SetCodeText(this TextMeshProUGUI text, string code) => text.SetText(Language.GetLang(code));
         public static void SetAlpha(this Graphic image, float alpha)
         {
             image.color = new Color(image.color.r, image.color.g, image.color.b, alpha);

@@ -15,12 +15,14 @@ namespace BirdExpert {
         private AudioSource soundPlayerAudioSource;
         private Button soundPlayerButton;
         private BirdInfo currentBird;
+        private BirdImage currentImage;
+        private BirdSound currentSound;
         private BirdsManager birdsManager { get => canvasManager.birdsManager; }
         public GameModeSO gameMode { get => canvasManager.gameMode; }
         private int birdCount;
         private float timeCounter;
         private int pointsCounter;
-        private List<BirdInfo> birdList;
+        private List<QuizzAnswer> allAnswers;
 
         public override void Initialize(bool active)
         {
@@ -38,7 +40,7 @@ namespace BirdExpert {
                 soundPlayerButton.onClick.AddListener(PlayBirdSound);
             }
             birdCount = 0;
-            birdList = new List<BirdInfo>();
+            allAnswers = new();
             otherLangNameText.gameObject.SetActive(gameMode.traductionMode);
             inputFieldManager.Initialize(this);
         }
@@ -64,21 +66,23 @@ namespace BirdExpert {
             limitText.SetText(Language.GetLang("bird")+" n°"+birdCount+"/"+canvasManager.numberOfBirdsInQuizz);
         }
 
-        private void DisplayBird(Sprite birdSprite)
+        private void DisplayBird(BirdImage birdImage)
         {
-            if (birdSprite != null)
+            if (birdImage.image != null)
             {
-                birdDisplayer.sprite = birdSprite;
+                birdDisplayer.sprite = birdImage.image;
+                currentImage = birdImage;
             }
             else { Debug.Log("No Image found !"); }
         }
         private void ResetImage() => birdDisplayer.sprite = null;
-        private void SetSound(AudioClip birdSound)
+        private void SetSound(BirdSound birdSound)
         {
-            if (birdSound != null)
+            if (birdSound.sound != null)
             {
                 soundPlayerGO.SetActive(true);
-                soundPlayerAudioSource.clip = birdSound;
+                soundPlayerAudioSource.clip = birdSound.sound;
+                currentSound = birdSound;
             }
             else { Debug.Log("No Sound found !"); }
         }
@@ -88,11 +92,10 @@ namespace BirdExpert {
         {
             if (gameMode.soundPresenceSetting == GameSettings.DataPresenceSettings.OnlyWhenNeeded) soundPlayerGO.SetActive(false);
             if (canvasManager.numberOfBirdsInQuizz !=0) UpdateNumberText();
-            if (ShouldDisplayImage(bird)) DisplayBird(bird.GetRandomImage(gameMode.imageSetting).image);
-            if (ShouldDisplaySound(bird)) SetSound(bird.GetRandomSound(typePriority: gameMode.soundSetting, findAnyway: true).sound);
+            if (ShouldDisplayImage(bird)) DisplayBird(bird.GetRandomImage(gameMode.imageSetting));
+            if (ShouldDisplaySound(bird)) SetSound(bird.GetRandomSound(typePriority: gameMode.soundSetting, findAnyway: true));
             if (gameMode.traductionMode) otherLangNameText.SetText(bird.GetName(gameMode.hintLang));
             currentBird = bird;
-            birdList.Add(bird);
             Debug.Log(bird.spCode + " is now set up !");
         }
         private bool ShouldDisplayImage(BirdInfo bird)
@@ -135,14 +138,22 @@ namespace BirdExpert {
 
         public void ProcessAnswer(string input)
         {
+            if (gameMode.imagePresenceSetting != GameSettings.DataPresenceSettings.Never) ResetImage();
+            inputFieldManager.Interactable = false;
+            BirdInfo correctAnswer = null;
+            bool isCorrect = false;
+            if (input == currentBird.GetName(gameMode.lang)) 
+            {
+                pointsCounter++;
+                isCorrect = true;
+            }
+            else correctAnswer = birdsManager.GetBirdFromLang(gameMode.lang, input);
+            QuizzAnswer quizzAnswer = new QuizzAnswer(birdCount, currentBird, isCorrect, currentImage.sex, currentSound.type, correctAnswer);
             if (gameMode.soundPresenceSetting != GameSettings.DataPresenceSettings.Never)
             {
                 StopBirdSound();
                 ResetSound();
             }
-            if (gameMode.imagePresenceSetting != GameSettings.DataPresenceSettings.Never) ResetImage();
-            inputFieldManager.Interactable = false;
-            if (input == currentBird.GetName(gameMode.lang)) {pointsCounter++;}
             if (gameMode.answerSetting == GameSettings.AnswerSettings.Direct) resultArea.SetResult(input, currentBird.GetName(gameMode.lang));
             else GoToNextBird();
             if (birdCount == canvasManager.numberOfBirdsInQuizz) resultArea.StopQuizz();
@@ -151,7 +162,7 @@ namespace BirdExpert {
         private void GoToNextBird()
         {
             inputFieldManager.ResetInputField();
-            if (birdCount == canvasManager.numberOfBirdsInQuizz)
+            if (gameMode.objective == GameSettings.GameObjective.NumberedQuizz && birdCount == canvasManager.numberOfBirdsInQuizz)
             { 
                 StopQuizz();
                 return;
@@ -162,8 +173,27 @@ namespace BirdExpert {
 
         private void StopQuizz()
         {
-            canvasManager.StopQuizz(pointsCounter);
+            canvasManager.StopQuizz(allAnswers);
             CloseArea();
+        }
+    }
+    public struct QuizzAnswer
+    {
+        public int number;
+        public BirdInfo expectedBird;
+        public bool isCorrect;
+        public Sex imageSex;
+        public SoundType soundType;
+        public BirdInfo correctAnswer;
+
+        public QuizzAnswer(int number, BirdInfo expectedBird, bool isCorrect, Sex imageSex, SoundType soundType, BirdInfo correctAnswer)
+        {
+            this.number = number;
+            this.expectedBird = expectedBird;
+            this.isCorrect = isCorrect;
+            this.imageSex = imageSex;
+            this.soundType = soundType;
+            this.correctAnswer = correctAnswer;
         }
     }
 }
